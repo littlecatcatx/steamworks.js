@@ -7,6 +7,8 @@ pub mod callback {
         JsFunction,
     };
 
+    use crate::logger::log_function_call;
+
     #[napi]
     pub struct Handle {
         handle: Option<steamworks::CallbackHandle>,
@@ -19,10 +21,12 @@ pub mod callback {
             if let Some(handle) = self.handle.take() {
                 handle.disconnect();
             }
+            log_function_call("callback.Handle.disconnect", &[], &"()");
         }
     }
 
     #[napi]
+    #[derive(Debug)]
     pub enum SteamCallback {
         PersonaStateChange,
         SteamServersConnected,
@@ -78,6 +82,8 @@ pub mod callback {
                 register_callback::<steamworks::MicroTxnAuthorizationResponse>(threadsafe_handler)
             }
         };
+
+        log_function_call("callback.register", &[&steam_callback], &"Handle");
 
         Handle {
             handle: Some(handle),

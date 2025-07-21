@@ -2,9 +2,11 @@ use napi_derive::napi;
 
 #[napi]
 pub mod input {
+    use crate::logger::log_function_call;
     use napi::bindgen_prelude::BigInt;
 
     #[napi(string_enum)]
+    #[derive(Debug)]
     pub enum InputType {
         Unknown,
         SteamController,
@@ -57,46 +59,74 @@ pub mod input {
             let client = crate::client::get_client();
             client
                 .input()
-                .activate_action_set_handle(self.handle.get_u64().1, action_set_handle.get_u64().1)
+                .activate_action_set_handle(self.handle.get_u64().1, action_set_handle.get_u64().1);
+            log_function_call(
+                "input.Controller.activate_action_set",
+                &[&self.handle, &action_set_handle],
+                &"()",
+            );
         }
 
         #[napi]
         pub fn is_digital_action_pressed(&self, action_handle: BigInt) -> bool {
-            let client = crate::client::get_client();
-            client
-                .input()
-                .get_digital_action_data(self.handle.get_u64().1, action_handle.get_u64().1)
-                .bState
+            let result = {
+                let client = crate::client::get_client();
+                client
+                    .input()
+                    .get_digital_action_data(self.handle.get_u64().1, action_handle.get_u64().1)
+                    .bState
+            };
+            log_function_call(
+                "input.Controller.is_digital_action_pressed",
+                &[&self.handle, &action_handle],
+                &result,
+            );
+            result
         }
 
         #[napi]
         pub fn get_analog_action_vector(&self, action_handle: BigInt) -> AnalogActionVector {
-            let client = crate::client::get_client();
-            let data = client
-                .input()
-                .get_analog_action_data(self.handle.get_u64().1, action_handle.get_u64().1);
-            AnalogActionVector {
-                x: data.x as f64,
-                y: data.y as f64,
-            }
+            let result = {
+                let client = crate::client::get_client();
+                let data = client
+                    .input()
+                    .get_analog_action_data(self.handle.get_u64().1, action_handle.get_u64().1);
+                AnalogActionVector {
+                    x: data.x as f64,
+                    y: data.y as f64,
+                }
+            };
+            log_function_call(
+                "input.Controller.get_analog_action_vector",
+                &[&self.handle, &action_handle],
+                &result,
+            );
+            result
         }
 
         #[napi]
         pub fn get_type(&self) -> InputType {
-            let client = crate::client::get_client();
-            client
-                .input()
-                .get_input_type_for_handle(self.handle.get_u64().1)
-                .into()
+            let result = {
+                let client = crate::client::get_client();
+                client
+                    .input()
+                    .get_input_type_for_handle(self.handle.get_u64().1)
+                    .into()
+            };
+            log_function_call("input.Controller.get_type", &[&self.handle], &result);
+            result
         }
 
         #[napi]
         pub fn get_handle(&self) -> BigInt {
-            self.handle.clone()
+            let result = self.handle.clone();
+            log_function_call("input.Controller.get_handle", &[&self.handle], &result);
+            result
         }
     }
 
     #[napi(object)]
+    #[derive(Debug)]
     pub struct AnalogActionVector {
         pub x: f64,
         pub y: f64,
@@ -106,42 +136,60 @@ pub mod input {
     pub fn init() {
         let client = crate::client::get_client();
         client.input().init(false);
+        log_function_call("input.init", &[], &"()");
     }
 
     #[napi]
     pub fn get_controllers() -> Vec<Controller> {
-        let client = crate::client::get_client();
-        client
-            .input()
-            .get_connected_controllers()
-            .into_iter()
-            .map(|identity| Controller {
-                handle: BigInt::from(identity),
-            })
-            .collect()
+        let result = {
+            let client = crate::client::get_client();
+            client
+                .input()
+                .get_connected_controllers()
+                .into_iter()
+                .map(|identity| Controller {
+                    handle: BigInt::from(identity),
+                })
+                .collect()
+        };
+        log_function_call("input.get_controllers", &[], &"Vec<Controller>");
+        result
     }
 
     #[napi]
     pub fn get_action_set(action_set_name: String) -> BigInt {
-        let client = crate::client::get_client();
-        BigInt::from(client.input().get_action_set_handle(&action_set_name))
+        let result = {
+            let client = crate::client::get_client();
+            BigInt::from(client.input().get_action_set_handle(&action_set_name))
+        };
+        log_function_call("input.get_action_set", &[&action_set_name], &result);
+        result
     }
 
     #[napi]
     pub fn get_digital_action(action_name: String) -> BigInt {
-        let client = crate::client::get_client();
-        BigInt::from(client.input().get_digital_action_handle(&action_name))
+        let result = {
+            let client = crate::client::get_client();
+            BigInt::from(client.input().get_digital_action_handle(&action_name))
+        };
+        log_function_call("input.get_digital_action", &[&action_name], &result);
+        result
     }
 
     #[napi]
     pub fn get_analog_action(action_name: String) -> BigInt {
-        let client = crate::client::get_client();
-        BigInt::from(client.input().get_analog_action_handle(&action_name))
+        let result = {
+            let client = crate::client::get_client();
+            BigInt::from(client.input().get_analog_action_handle(&action_name))
+        };
+        log_function_call("input.get_analog_action", &[&action_name], &result);
+        result
     }
 
     #[napi]
     pub fn shutdown() {
         let client = crate::client::get_client();
-        client.input().shutdown()
+        client.input().shutdown();
+        log_function_call("input.shutdown", &[], &"()");
     }
 }

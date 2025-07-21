@@ -2,11 +2,13 @@ use napi_derive::napi;
 
 #[napi]
 pub mod overlay {
+    use crate::logger::log_function_call;
     use napi::bindgen_prelude::BigInt;
     use std::fmt;
     use steamworks::OverlayToStoreFlag;
 
     #[napi]
+    #[derive(Debug)]
     pub enum Dialog {
         Friends,
         Community,
@@ -32,6 +34,7 @@ pub mod overlay {
     }
 
     #[napi]
+    #[derive(Debug)]
     pub enum StoreFlag {
         None,
         AddToCart,
@@ -41,7 +44,8 @@ pub mod overlay {
     #[napi]
     pub fn activate_dialog(dialog: Dialog) {
         let client = crate::client::get_client();
-        client.friends().activate_game_overlay(&dialog.to_string())
+        client.friends().activate_game_overlay(&dialog.to_string());
+        log_function_call("overlay.activate_dialog", &[&dialog], &"()");
     }
 
     #[napi]
@@ -50,7 +54,12 @@ pub mod overlay {
         client.friends().activate_game_overlay_to_user(
             &dialog.to_string(),
             steamworks::SteamId::from_raw(steam_id64.get_u64().1),
-        )
+        );
+        log_function_call(
+            "overlay.activate_dialog_to_user",
+            &[&dialog, &steam_id64],
+            &"()",
+        );
     }
 
     #[napi]
@@ -58,13 +67,15 @@ pub mod overlay {
         let client = crate::client::get_client();
         client
             .friends()
-            .activate_invite_dialog(steamworks::LobbyId::from_raw(lobby_id.get_u64().1))
+            .activate_invite_dialog(steamworks::LobbyId::from_raw(lobby_id.get_u64().1));
+        log_function_call("overlay.activate_invite_dialog", &[&lobby_id], &"()");
     }
 
     #[napi]
     pub fn activate_to_web_page(url: String) {
         let client = crate::client::get_client();
-        client.friends().activate_game_overlay_to_web_page(&url)
+        client.friends().activate_game_overlay_to_web_page(&url);
+        log_function_call("overlay.activate_to_web_page", &[&url], &"()");
     }
 
     #[napi]
@@ -77,6 +88,7 @@ pub mod overlay {
                 StoreFlag::AddToCart => OverlayToStoreFlag::AddToCart,
                 StoreFlag::AddToCartAndShow => OverlayToStoreFlag::AddToCartAndShow,
             },
-        )
+        );
+        log_function_call("overlay.activate_to_store", &[&app_id, &flag], &"()");
     }
 }
