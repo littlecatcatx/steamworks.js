@@ -27,10 +27,23 @@ pub mod localplayer {
 
     #[napi]
     pub fn get_steam_id() -> PlayerSteamId {
+        #[cfg(not(feature = "mock"))]
         let result = {
             let client = crate::client::get_client();
             let steam_id = client.user().steam_id();
             PlayerSteamId::from_steamid(steam_id)
+        };
+        #[cfg(feature = "mock")]
+        let result = {
+            use napi::bindgen_prelude::BigInt;
+            PlayerSteamId {
+                steam_id64: BigInt {
+                    sign_bit: false,
+                    words: vec![77561192047718298],
+                },
+                steam_id32: "STEAM_0:0:63223210".to_string(),
+                account_id: 97242873,
+            }
         };
         log_function_call("localplayer.get_steam_id", &[], &result);
         result
@@ -38,10 +51,13 @@ pub mod localplayer {
 
     #[napi]
     pub fn get_name() -> String {
+        #[cfg(not(feature = "mock"))]
         let result = {
             let client = crate::client::get_client();
             client.friends().name()
         };
+        #[cfg(feature = "mock")]
+        let result = "shadow".to_string();
         log_function_call("localplayer.get_name", &[], &result);
         result
     }

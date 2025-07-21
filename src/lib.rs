@@ -14,6 +14,7 @@ use crate::logger::log_function_call;
 
 #[napi]
 pub fn init(app_id: Option<u32>) -> Result<(), Error> {
+    #[cfg(not(feature = "mock"))]
     let result = (|| {
         if client::has_client() {
             client::drop_client();
@@ -33,6 +34,8 @@ pub fn init(app_id: Option<u32>) -> Result<(), Error> {
         client::set_client(steam_client);
         Ok(())
     })();
+    #[cfg(feature = "mock")]
+    let result = Ok(());
 
     log_function_call("init", &[&app_id], &result.is_ok());
     result
@@ -40,15 +43,19 @@ pub fn init(app_id: Option<u32>) -> Result<(), Error> {
 
 #[napi]
 pub fn restart_app_if_necessary(app_id: u32) -> bool {
+    #[cfg(not(feature = "mock"))]
     let result = steamworks::restart_app_if_necessary(AppId(app_id));
+    #[cfg(feature = "mock")]
+    let result = false;
     log_function_call("restart_app_if_necessary", &[&app_id], &result);
     result
 }
 
 #[napi]
 pub fn run_callbacks() {
+    #[cfg(not(feature = "mock"))]
     client::get_client().run_callbacks();
-    log_function_call("run_callbacks", &[], &"()");
+    // log_function_call("run_callbacks", &[], &"()");
 }
 
 pub mod api;

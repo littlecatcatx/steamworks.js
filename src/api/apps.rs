@@ -9,10 +9,13 @@ pub mod apps {
 
     #[napi]
     pub fn is_subscribed_app(app_id: u32) -> bool {
+        #[cfg(not(feature = "mock"))]
         let result = {
             let client = crate::client::get_client();
             client.apps().is_subscribed_app(AppId(app_id))
         };
+        #[cfg(feature = "mock")]
+        let result = true;
         log_function_call("apps.is_subscribed_app", &[&app_id], &result);
         result
     }

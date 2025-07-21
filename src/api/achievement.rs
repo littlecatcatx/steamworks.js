@@ -23,6 +23,7 @@ pub mod achievement {
 
     #[napi]
     pub fn is_activated(achievement: String) -> bool {
+        #[cfg(not(feature = "mock"))]
         let result = {
             let client = crate::client::get_client();
             client
@@ -31,6 +32,8 @@ pub mod achievement {
                 .get()
                 .unwrap_or(false)
         };
+        #[cfg(feature = "mock")]
+        let result = true;
         log_function_call("achievement.is_activated", &[&achievement], &result);
         result
     }
